@@ -38,7 +38,20 @@ func main() {
 		fmt.Println("Logs from your program will appear here!")
 
 		// Uncomment this to pass the first stage
-		fmt.Printf("database page size: %v", pageSize)
+		fmt.Printf("database page size: %v\n", pageSize)
+
+		// now, for the number of tables
+		sqlite_schema := make([]byte, pageSize)
+		_, err = databaseFile.Read(sqlite_schema)
+		if err != nil {
+			log.Fatal(err)
+		}
+		var numTables uint16
+		if err := binary.Read(bytes.NewReader(sqlite_schema[0:pageSize]), binary.BigEndian, &numTables); err != nil {
+			fmt.Println("Failed to read integer:", err)
+			return
+		}
+		fmt.Printf("number of tables: %v\n", numTables)
 	default:
 		fmt.Println("Unknown command", command)
 		os.Exit(1)
