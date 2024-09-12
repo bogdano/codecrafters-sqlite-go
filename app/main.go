@@ -34,24 +34,23 @@ func main() {
 			fmt.Println("Failed to read integer:", err)
 			return
 		}
-		// You can use print statements as follows for debugging, they'll be visible when running tests.
-		fmt.Println("Logs from your program will appear here!")
 
 		// Uncomment this to pass the first stage
 		fmt.Printf("database page size: %v\n", pageSize)
 
 		// now, for the number of tables
-		sqlite_schema := make([]byte, pageSize)
-		_, err = databaseFile.Read(sqlite_schema)
+		pageHeader := make([]byte, 12)
+		_, err = databaseFile.ReadAt(pageHeader, 100)
 		if err != nil {
 			log.Fatal(err)
 		}
+
 		var numTables uint16
-		if err := binary.Read(bytes.NewReader(sqlite_schema[0:pageSize]), binary.BigEndian, &numTables); err != nil {
-			fmt.Println("Failed to read integer:", err)
+		if err := binary.Read(bytes.NewReader(pageHeader[3:5]), binary.BigEndian, &numTables); err != nil {
+			fmt.Println("Failed to read integer:\n", err)
 			return
 		}
-		fmt.Printf("number of tables: %v\n", numTables)
+		fmt.Printf("number of tables: %v", numTables)
 	default:
 		fmt.Println("Unknown command", command)
 		os.Exit(1)
